@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AccessibilityInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { HabitCard } from './src/components/HabitCard';
@@ -24,7 +24,28 @@ const greeting = () => {
   return 'Good evening';
 };
 
+// On the web, a long press normally selects text or opens the browser's
+// callout menu, which interrupts the hold. Turn those off for the app.
+function useWebHoldFix() {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const style = document.createElement('style');
+    style.textContent =
+      '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}';
+    document.head.appendChild(style);
+    const block = (e: Event) => e.preventDefault();
+    document.addEventListener('contextmenu', block);
+    document.addEventListener('selectstart', block);
+    return () => {
+      style.remove();
+      document.removeEventListener('contextmenu', block);
+      document.removeEventListener('selectstart', block);
+    };
+  }, []);
+}
+
 export default function App() {
+  useWebHoldFix();
   const reduceMotion = useReduceMotion();
   const [showSplash, setShowSplash] = useState(true);
   const [habits, setHabits] = useState(initialHabits);

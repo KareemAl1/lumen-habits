@@ -110,6 +110,9 @@ export function HabitCard({ habit, index, onToggle, reduceMotion }: Props) {
       accessibilityLabel={`${habit.name}, ${habit.detail}, ${habit.done ? 'done' : 'not done'}`}
       accessibilityHint={habit.done ? 'Hold to mark as not done' : 'Hold to mark as done'}
       onAccessibilityTap={() => onToggle(habit.id)}
+      delayLongPress={10_000}
+      unstable_pressDelay={0}
+      style={styles.pressable}
     >
       <Animated.View style={[styles.card, cardStyle]}>
         <View style={styles.ringWrap}>
@@ -157,6 +160,7 @@ export function HabitCard({ habit, index, onToggle, reduceMotion }: Props) {
 }
 
 const styles = StyleSheet.create({
+  pressable: Platform.OS === 'web' ? ({ touchAction: 'pan-y', userSelect: 'none' } as object) : {},
   card: {
     flexDirection: 'row',
     alignItems: 'center',
