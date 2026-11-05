@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { HabitCard } from './src/components/HabitCard';
 import { Splash } from './src/components/Splash';
+import { WeekStrip } from './src/components/WeekStrip';
 import { initialHabits } from './src/data';
 import { colors, hues } from './src/theme';
 
@@ -83,6 +84,8 @@ export default function App() {
             <Animated.View style={[styles.bar, barStyle]} />
           </View>
         </View>
+        <WeekStrip today={doneCount / habits.length} reduceMotion={reduceMotion} />
+        <Text style={styles.section}>Today</Text>
         <View style={styles.list}>
           {habits.map((h, i) => (
             <HabitCard key={h.id} habit={h} index={i} onToggle={toggle} reduceMotion={reduceMotion} />
@@ -104,6 +107,7 @@ const styles = StyleSheet.create({
   summaryText: { fontSize: 15, color: colors.ink },
   track: { height: 8, borderRadius: 4, backgroundColor: colors.line, overflow: 'hidden' },
   bar: { height: 8, borderRadius: 4, backgroundColor: hues.amber.base },
+  section: { marginTop: 26, marginBottom: 10, fontSize: 13, color: colors.mute, textTransform: 'uppercase', letterSpacing: 1 },
   list: { gap: 12 },
   footnote: { marginTop: 22, textAlign: 'center', fontSize: 13, color: colors.mute },
 });
