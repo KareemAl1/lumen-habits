@@ -2,6 +2,8 @@
 
 A small habit app built around tactile, hand-tuned motion. Each habit is a light: hold it to switch it on.
 
+**[Try it live](https://lumen-habits.vercel.app)** (best on a phone)
+
 Built with React Native, Expo, Reanimated and react-native-svg. Runs on iOS, Android and the web.
 
 ## What's in it
