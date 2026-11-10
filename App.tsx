@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { AddHabitSheet } from './src/components/AddHabitSheet';
+import { AllLit } from './src/components/AllLit';
 import { HabitCard } from './src/components/HabitCard';
 import { Splash } from './src/components/Splash';
 import { WeekStrip } from './src/components/WeekStrip';
@@ -70,6 +71,15 @@ export default function App() {
     progress.value = reduceMotion ? target : withTiming(target, { duration: 700, easing: Easing.bezier(0.16, 1, 0.3, 1) });
   }, [doneCount, habits.length, progress, reduceMotion]);
 
+  // Count each time the day goes from unfinished to fully lit.
+  const allLit = habits.length > 0 && doneCount === habits.length;
+  const wasAllLit = useRef(allLit);
+  const [burst, setBurst] = useState(0);
+  useEffect(() => {
+    if (allLit && !wasAllLit.current) setBurst((n) => n + 1);
+    wasAllLit.current = allLit;
+  }, [allLit]);
+
   const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
   const date = useMemo(
     () => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
@@ -86,8 +96,11 @@ export default function App() {
           <Text style={styles.summaryText}>
             {doneCount === habits.length ? 'Every light is on today.' : `${doneCount} of ${habits.length} lit today`}
           </Text>
-          <View style={styles.track}>
-            <Animated.View style={[styles.bar, barStyle]} />
+          <View>
+            <View style={styles.track}>
+              <Animated.View style={[styles.bar, barStyle]} />
+            </View>
+            <AllLit burst={burst} reduceMotion={reduceMotion} />
           </View>
         </View>
         <WeekStrip today={doneCount / habits.length} reduceMotion={reduceMotion} />
