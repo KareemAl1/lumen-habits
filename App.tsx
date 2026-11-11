@@ -9,6 +9,7 @@ import { HabitCard } from './src/components/HabitCard';
 import { Splash } from './src/components/Splash';
 import { WeekStrip } from './src/components/WeekStrip';
 import { initialHabits, type Habit } from './src/data';
+import { loadHabits, saveHabits } from './src/storage';
 import { colors, hues } from './src/theme';
 
 function useReduceMotion() {
@@ -53,6 +54,23 @@ export default function App() {
   const reduceMotion = useReduceMotion();
   const [showSplash, setShowSplash] = useState(true);
   const [habits, setHabits] = useState(initialHabits);
+  // Load what was saved before the first save, so the starter list never
+  // overwrites someone's own habits.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    loadHabits().then((saved) => {
+      if (!alive) return;
+      if (saved) setHabits(saved);
+      setRestored(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (restored) saveHabits(habits);
+  }, [habits, restored]);
 
   const toggle = useCallback((id: string) => {
     setHabits((list) =>
@@ -75,10 +93,15 @@ export default function App() {
   const allLit = habits.length > 0 && doneCount === habits.length;
   const wasAllLit = useRef(allLit);
   const [burst, setBurst] = useState(0);
+  // Saved habits arriving on load shouldn't set it off, only a hold today.
+  const settled = useRef(false);
   useEffect(() => {
-    if (allLit && !wasAllLit.current) setBurst((n) => n + 1);
+    if (allLit && !wasAllLit.current && settled.current) setBurst((n) => n + 1);
     wasAllLit.current = allLit;
   }, [allLit]);
+  useEffect(() => {
+    settled.current = restored;
+  }, [restored]);
 
   const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
   const date = useMemo(
