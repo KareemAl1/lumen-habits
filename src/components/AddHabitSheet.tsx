@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -51,6 +51,7 @@ export function AddHabitSheet({ open, onClose, onAdd, reduceMotion }: Props) {
   const [name, setName] = useState('');
   const [detail, setDetail] = useState('');
   const [hue, setHue] = useState<HueKey>('amber');
+  const detailRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   useEffect(() => {
     if (open) {
@@ -112,9 +113,13 @@ export function AddHabitSheet({ open, onClose, onAdd, reduceMotion }: Props) {
             style={styles.input}
             autoFocus={Platform.OS !== 'web'}
             returnKeyType="next"
+            // Return on the name moves on to the amount instead of closing the keyboard.
+            onSubmitEditing={() => detailRef.current?.focus()}
+            submitBehavior="submit"
             maxLength={32}
           />
           <TextInput
+            ref={detailRef}
             value={detail}
             onChangeText={setDetail}
             placeholder="How much? e.g. 15 minutes"
