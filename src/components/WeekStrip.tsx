@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
+import { dayKey, type History } from '../storage';
 import { colors, hues } from '../theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -77,16 +78,26 @@ function Day({ label, value, index, today, reduceMotion }: DayProps) {
 }
 
 const LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-// A believable recent week so the strip has a shape before you use it.
+// A believable recent week so the strip has a shape on a first visit, before anything is recorded.
 const PAST = [1, 0.75, 1, 0.5, 1, 0.75, 1];
 
-export function WeekStrip({ today: todayValue, reduceMotion }: { today: number; reduceMotion: boolean }) {
-  const todayIndex = (new Date().getDay() + 6) % 7;
+type Props = { today: number; history: History; reduceMotion: boolean };
+
+// Past days show what you actually lit. A day you didn't open the app stays empty.
+export function WeekStrip({ today: todayValue, history, reduceMotion }: Props) {
+  const now = new Date();
+  const todayIndex = (now.getDay() + 6) % 7;
+  const recorded = Object.keys(history).length > 0;
+  const past = (i: number) => {
+    if (!recorded) return PAST[i];
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (todayIndex - i));
+    return history[dayKey(d)] ?? 0;
+  };
   return (
     <View style={styles.strip}>
       {LABELS.map((label, i) => {
         const isToday = i === todayIndex;
-        const value = i < todayIndex ? PAST[i] : isToday ? todayValue : 0;
+        const value = i < todayIndex ? past(i) : isToday ? todayValue : 0;
         return <Day key={i} label={label} value={value} index={i} today={isToday} reduceMotion={reduceMotion} />;
       })}
     </View>

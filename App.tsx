@@ -9,7 +9,7 @@ import { HabitCard } from './src/components/HabitCard';
 import { Splash } from './src/components/Splash';
 import { WeekStrip } from './src/components/WeekStrip';
 import { initialHabits, type Habit } from './src/data';
-import { loadHabits, saveHabits } from './src/storage';
+import { getHistory, loadHabits, saveHabits, type History } from './src/storage';
 import { colors, hues } from './src/theme';
 
 function useReduceMotion() {
@@ -57,11 +57,13 @@ export default function App() {
   // Load what was saved before the first save, so the starter list never
   // overwrites someone's own habits.
   const [restored, setRestored] = useState(false);
+  const [history, setHistory] = useState<History>({});
   useEffect(() => {
     let alive = true;
     loadHabits().then((saved) => {
       if (!alive) return;
       if (saved) setHabits(saved);
+      setHistory(getHistory());
       setRestored(true);
     });
     return () => {
@@ -126,7 +128,7 @@ export default function App() {
             <AllLit burst={burst} reduceMotion={reduceMotion} />
           </View>
         </View>
-        <WeekStrip today={doneCount / habits.length} reduceMotion={reduceMotion} />
+        <WeekStrip today={doneCount / habits.length} history={history} reduceMotion={reduceMotion} />
         <Text style={styles.section}>Today</Text>
         <View style={styles.list}>
           {habits.map((h, i) => (
